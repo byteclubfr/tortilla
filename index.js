@@ -27,10 +27,13 @@ npm.load({
 				return
 			}
 
-			var src = path.normalize(modulePath + '/' + bower.main);
-			var dst = process.cwd() + '/public/vendors/' + path.normalize(bower.main);
+			if (typeof bower.main === "string") bower.main = [bower.main];
 
-			fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+			bower.main.forEach(function (main) {
+				var src = path.normalize(modulePath + '/' + main);
+				var dst = process.cwd() + '/public/vendors/' + path.basename(main);
+				fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+			});
 
 		});
 
