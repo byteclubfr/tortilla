@@ -6,9 +6,10 @@ var path = require('path');
 var module = require('yargs').argv._[0];
 
 npm.load({
-	loaded: false
+	loaded: false,
+	loglevel: 'silent'
 }, function (err) {
-	// catch errors
+
 	npm.commands.install([module], function (er, data) {
 
 		var modulePath = process.cwd() + '/' + path.normalize('./node_modules/' + module);
@@ -33,6 +34,14 @@ npm.load({
 				var src = path.normalize(modulePath + '/' + main);
 				var dst = process.cwd() + '/public/vendors/' + path.basename(main);
 				fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+
+				if (path.extname(main) === '.js') {
+					console.log("\nCopy this\n" + '<script src="vendors/' + path.basename(main) + '"></script>' + "\n");
+				}
+				if (path.extname(main) === '.css') {
+					console.log("\nCopy this\n" + '<link rel="stylesheet" href="vendors/' + path.basename(main) + '">' + "\n");
+				}
+
 			});
 
 		});
