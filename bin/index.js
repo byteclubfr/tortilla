@@ -1,16 +1,18 @@
 #!/usr/bin/env node
+
 var npm = require('npm');
 var fs = require('fs');
 var path = require('path');
 var module = require('yargs').argv._[0];
 
 npm.load({
-	loaded: false
+	loaded: false,
+	loglevel: 'silent'
 }, function (err) {
-	// catch errors
+
 	npm.commands.install([module], function (er, data) {
 
-		var modulePath = './' + path.normalize('./node_modules/' + module);
+		var modulePath = process.cwd() + '/' + path.normalize('./node_modules/' + module);
 
 		fs.exists(modulePath + '/bower.json', function(exists) {
 
@@ -26,10 +28,21 @@ npm.load({
 				return
 			}
 
-			var src = './' + path.normalize(modulePath + '/' + bower.main);
-			var dst = './public/vendors/' + path.normalize(bower.main);
+			if (typeof bower.main === "string") bower.main = [bower.main];
 
-			fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+			bower.main.forEach(function (main) {
+				var src = path.normalize(modulePath + '/' + main);
+				var dst = process.cwd() + '/public/vendors/' + path.basename(main);
+				fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+
+				if (path.extname(main) === '.js') {
+					console.log("\nCopy this\n" + '<script src="vendors/' + path.basename(main) + '"></script>' + "\n");
+				}
+				if (path.extname(main) === '.css') {
+					console.log("\nCopy this\n" + '<link rel="stylesheet" href="vendors/' + path.basename(main) + '">' + "\n");
+				}
+
+			});
 
 		});
 
